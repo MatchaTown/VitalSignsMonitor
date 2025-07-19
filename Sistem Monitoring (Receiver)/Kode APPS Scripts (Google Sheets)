@@ -1,0 +1,317 @@
+// Fungsi untuk menerapkan conditional formatting
+function applyConditionalFormatting(sheet) {
+  var lastRow = sheet.getLastRow();
+  var statusColumns = [4, 6, 8]; // Status Suhu (4), Status SpO2 (6), Status Heart Rate (8)
+  
+  // Hapus semua aturan conditional formatting yang ada
+  sheet.clearConditionalFormatRules();
+  
+  // Buat aturan baru untuk setiap kolom status
+  for (var i = 0; i < statusColumns.length; i++) {
+    var col = statusColumns[i];
+    var range = sheet.getRange(2, col, Math.max(1, lastRow - 1), 1);
+    
+    // Aturan untuk "Normal" - warna hijau
+    var normalRule = SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo("Normal")
+      .setBackground("#B6D7A8")
+      .setRanges([range])
+      .build();
+    
+    // Aturan untuk "Tidak Normal" - warna merah
+    var notNormalRule = SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo("Tidak Normal")
+      .setBackground("#F4CCCC")
+      .setRanges([range])
+      .build();
+    
+    var rules = sheet.getConditionalFormatRules();
+    rules.push(normalRule);
+    rules.push(notNormalRule);
+    sheet.setConditionalFormatRules(rules);
+  }
+  
+  Logger.log("Conditional formatting applied to sheet: " + sheet.getName());
+}
+
+// Fungsi untuk membuat atau mendapatkan sheet berdasarkan User ID
+function getOrCreateSheet(userID) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetName = "UserID_" + userID;
+  var sheet = ss.getSheetByName(sheetName);
+  
+  // Jika sheet tidak ada, buat sheet baru
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    
+    // Tambahkan header
+    var headers = [
+      "Timestamp", 
+      "User ID", 
+      "Suhu", 
+      "Status Suhu", 
+      "SpO2", 
+      "Status SpO2", 
+      "Heart Rate", 
+      "Status Heart Rate", 
+      "Latitude", 
+      "Longitude", 
+      "Battery"
+    ];
+    
+    sheet.appendRow(headers);
+    
+    // Format header
+    var headerRange = sheet.getRange(1, 1, 1, headers.length);
+    headerRange.setFontWeight("bold");
+    headerRange.setBackground("#D9EAD3");
+    headerRange.setHorizontalAlignment("center");
+    
+    // Auto-resize columns
+    sheet.autoResizeColumns(1, headers.length);
+    
+    Logger.log("Created new sheet: " + sheetName);
+  } else {
+    // Sheet sudah ada - validasi struktur header (opsional)
+    Logger.log("Using existing sheet: " + sheetName);
+    
+    // OPSIONAL: Cek apakah header sesuai dengan yang diharapkan
+    var existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var expectedHeaders = [
+      "Timestamp", "User ID", "Suhu", "Status Suhu", "SpO2", "Status SpO2", 
+      "Heart Rate", "Status Heart Rate", "Latitude", "Longitude", "Battery"
+    ];
+    
+    // Log perbedaan header jika ada
+    if (existingHeaders.length !== expectedHeaders.length) {
+      Logger.log("Warning: Jumlah kolom berbeda. Existing: " + existingHeaders.length + ", Expected: " + expectedHeaders.length);
+    }
+  }
+  
+  return sheet;
+}
+
+// Fungsi untuk memformat data row
+function formatDataRow(sheet, rowNumber, dataLength) {
+  // Format center alignment untuk semua kolom
+  var dataRange = sheet.getRange(rowNumber, 1, 1, dataLength);
+  dataRange.setHorizontalAlignment("center");
+  
+  // Format timestamp
+  sheet.getRange(rowNumber, 1).setNumberFormat("dd/MM/yyyy HH:mm:ss");
+  
+  // Format angka dengan 2 desimal untuk suhu dan GPS
+  sheet.getRange(rowNumber, 3).setNumberFormat("0.00"); // Suhu
+  sheet.getRange(rowNumber, 9).setNumberFormat("0.00");  // Latitude
+  sheet.getRange(rowNumber, 10).setNumberFormat("0.00"); // Longitude
+  
+  // Format angka tanpa desimal untuk SpO2, Heart Rate, dan Battery
+  sheet.getRange(rowNumber, 5).setNumberFormat("0");   // SpO2
+  sheet.getRange(rowNumber, 7).setNumberFormat("0");   // Heart Rate
+  sheet.getRange(rowNumber, 11).setNumberFormat("0");  // Battery
+}
+
+// Fungsi untuk memformat ulang seluruh sheet
+function reformatEntireSheet(sheetName) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  
+  if (!sheet) {
+    SpreadsheetApp.getActiveSpreadsheet().toast("Sheet " + sheetName + " tidak ditemukan!", "Error");
+    return;
+  }
+  
+  var lastRow = sheet.getLastRow();
+  var lastColumn = sheet.getLastColumn();
+  
+  if (lastRow < 1) return;
+  
+  // Format header
+  var headerRange = sheet.getRange(1, 1, 1, lastColumn);
+  headerRange.setFontWeight("bold");
+  headerRange.setBackground("#D9EAD3");
+  headerRange.setHorizontalAlignment("center");
+  
+  // Format semua data jika ada
+  if (lastRow > 1) {
+    var dataRange = sheet.getRange(2, 1, lastRow - 1, lastColumn);
+    dataRange.setHorizontalAlignment("center");
+    
+    // Format timestamp
+    sheet.getRange(2, 1, lastRow - 1, 1).setNumberFormat("dd/MM/yyyy HH:mm:ss");
+    
+    // Format kolom numerik
+    var decimalColumns = [3, 9, 10]; // Suhu, Latitude, Longitude
+    var integerColumns = [5, 7, 11]; // SpO2, Heart Rate, Battery
+    
+    for (var i = 0; i < decimalColumns.length; i++) {
+      if (decimalColumns[i] <= lastColumn) {
+        sheet.getRange(2, decimalColumns[i], lastRow - 1, 1).setNumberFormat("0.00");
+      }
+    }
+    
+    for (var i = 0; i < integerColumns.length; i++) {
+      if (integerColumns[i] <= lastColumn) {
+        sheet.getRange(2, integerColumns[i], lastRow - 1, 1).setNumberFormat("0");
+      }
+    }
+  }
+  
+  // Auto-resize columns
+  sheet.autoResizeColumns(1, lastColumn);
+  
+  // Apply conditional formatting
+  applyConditionalFormatting(sheet);
+  
+  SpreadsheetApp.getActiveSpreadsheet().toast("Formatting selesai untuk " + sheetName, "Format Sheet");
+}
+
+// Fungsi untuk memformat semua sheet yang ada
+function reformatAllSheets() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheets = ss.getSheets();
+  
+  for (var i = 0; i < sheets.length; i++) {
+    var sheet = sheets[i];
+    var sheetName = sheet.getName();
+    
+    // Hanya format sheet yang dimulai dengan "UserID_"
+    if (sheetName.startsWith("UserID_")) {
+      reformatEntireSheet(sheetName);
+    }
+  }
+  
+  SpreadsheetApp.getActiveSpreadsheet().toast("Semua sheet UserID telah diformat", "Format Complete");
+}
+
+// Fungsi utama untuk menangani request HTTP
+function doGet(e) {
+  return handleRequest(e);
+}
+
+function doPost(e) {
+  return handleRequest(e);
+}
+
+function handleRequest(e) {
+  try {
+    // Log parameter yang diterima
+    Logger.log("Parameters received: " + JSON.stringify(e.parameter));
+    
+    // Ambil nilai dari parameter request
+    var userID = e.parameter.userID || "Unknown";
+    var suhu = e.parameter.suhu || "0";
+    var suhuStatus = e.parameter.suhuStatus || "Unknown";
+    var oksigen = e.parameter.oksigen || "0";
+    var oksigenStatus = e.parameter.oksigenStatus || "Unknown";
+    var heartRate = e.parameter.heartRate || "0";
+    var heartRateStatus = e.parameter.heartRateStatus || "Unknown";
+    var latitude = e.parameter.latitude || "0";
+    var longitude = e.parameter.longitude || "0";
+    var battery = e.parameter.battery || "0";
+    
+    // Validasi User ID
+    if (userID === "Unknown" || userID === "") {
+      throw new Error("User ID tidak valid atau kosong");
+    }
+    
+    // Dapatkan atau buat sheet berdasarkan User ID
+    var sheet = getOrCreateSheet(userID);
+    
+    // Tambahkan timestamp
+    var timestamp = new Date();
+    
+    // Siapkan data row
+    var rowData = [
+      timestamp, 
+      userID, 
+      parseFloat(suhu), 
+      suhuStatus, 
+      parseInt(oksigen), 
+      oksigenStatus, 
+      parseInt(heartRate), 
+      heartRateStatus, 
+      parseFloat(latitude), 
+      parseFloat(longitude), 
+      parseInt(battery)
+    ];
+    
+    // Tambahkan data ke sheet
+    var newRow = sheet.getLastRow() + 1;
+    sheet.appendRow(rowData);
+    
+    // Format data row yang baru ditambahkan
+    formatDataRow(sheet, newRow, rowData.length);
+    
+    // Terapkan conditional formatting
+    applyConditionalFormatting(sheet);
+    
+    Logger.log("Data berhasil ditambahkan ke sheet: UserID_" + userID + " pada baris: " + newRow);
+    
+    // Kirim respons sukses
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        'status': 'success', 
+        'timestamp': timestamp.toString(),
+        'message': 'Data berhasil disimpan ke sheet UserID_' + userID,
+        'sheet': 'UserID_' + userID,
+        'row': newRow
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log("Error: " + error.toString());
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        'status': 'error', 
+        'message': error.toString()
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Fungsi untuk membuat menu di spreadsheet
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('IOT Monitoring Tools')
+    .addItem('Format Semua Sheet', 'reformatAllSheets')
+    .addSeparator()
+    .addSubMenu(ui.createMenu('Format Sheet Tertentu')
+      .addItem('UserID_1', function() { reformatEntireSheet('UserID_1'); })
+      .addItem('UserID_2', function() { reformatEntireSheet('UserID_2'); })
+      .addItem('UserID_3', function() { reformatEntireSheet('UserID_3'); }))
+    .addSeparator()
+    .addItem('Lihat Log', function() { 
+      var logs = Logger.getLog();
+      SpreadsheetApp.getUi().alert('Log Aktivitas', logs || 'Tidak ada log', SpreadsheetApp.getUi().ButtonSet.OK);
+    })
+    .addToUi();
+}
+
+// Fungsi helper untuk testing (opsional)
+function testCreateSheets() {
+  // Test function untuk membuat contoh sheets
+  var testUserIDs = ['1', '2', '3'];
+  
+  for (var i = 0; i < testUserIDs.length; i++) {
+    getOrCreateSheet(testUserIDs[i]);
+  }
+  
+  SpreadsheetApp.getActiveSpreadsheet().toast("Test sheets berhasil dibuat", "Test Complete");
+}
+
+// Fungsi untuk mendapatkan daftar semua sheet UserID
+function getUserIDSheets() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheets = ss.getSheets();
+  var userSheets = [];
+  
+  for (var i = 0; i < sheets.length; i++) {
+    var sheetName = sheets[i].getName();
+    if (sheetName.startsWith("UserID_")) {
+      userSheets.push(sheetName);
+    }
+  }
+  
+  return userSheets;
+}
