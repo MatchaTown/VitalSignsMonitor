@@ -1,0 +1,1365 @@
+[
+    {
+        "id": "c8b1575b4010ed02",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "0ad265b7073f1b2e",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/suhuBpkHaji/User1",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 230,
+        "y": 300,
+        "wires": [
+            [
+                "5f796f7062da20eb"
+            ]
+        ]
+    },
+    {
+        "id": "4f35264c2f0c2ebd",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/heart_rateBpkHaji/User1",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 250,
+        "y": 140,
+        "wires": [
+            [
+                "065596ec634cfb38",
+                "ce8ef10b1268dd6c"
+            ]
+        ]
+    },
+    {
+        "id": "19479ce0a69e35e7",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/spo2BpkHaji/User1",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 230,
+        "y": 240,
+        "wires": [
+            [
+                "6ba9d9d1088e3823"
+            ]
+        ]
+    },
+    {
+        "id": "e8557f80362035f3",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "MQTT Input",
+        "topic": "lokasi/BpkHaji/User1",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 190,
+        "y": 480,
+        "wires": [
+            [
+                "394e5c6e6b7b558f"
+            ]
+        ]
+    },
+    {
+        "id": "394e5c6e6b7b558f",
+        "type": "function",
+        "z": "c8b1575b4010ed02",
+        "name": "Store Coordinates",
+        "func": "flow.set('coordinates', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4debb6e77fccb852",
+        "type": "function",
+        "z": "c8b1575b4010ed02",
+        "name": "Generate Link",
+        "func": "var coords = flow.get('coordinates');\nif (coords) {\n    msg.payload = \"window.open('http://maps.google.com/?q=\" + coords + \"', '_blank')\";\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 540,
+        "wires": [
+            [
+                "b124ea816bb694d5"
+            ]
+        ]
+    },
+    {
+        "id": "2e4ec36edcf1ab52",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "kapasitas/BpkHaji/User1",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 230,
+        "y": 380,
+        "wires": [
+            [
+                "7eaad65721752cd6"
+            ]
+        ]
+    },
+    {
+        "id": "4f7b40a5f6be0dcf",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/suhuBpkHaji/User3",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 830,
+        "y": 280,
+        "wires": [
+            [
+                "6e1c8bb2717b81aa",
+                "67807b261f0da3c6"
+            ]
+        ]
+    },
+    {
+        "id": "ab51fa60f127c586",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/heart_rateBpkHaji/User2",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 850,
+        "y": 120,
+        "wires": [
+            [
+                "a5606a32cf22b665",
+                "b11f390da25583af"
+            ]
+        ]
+    },
+    {
+        "id": "4e7f4fd0714e1ee0",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/spo2BpkHaji/User2",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 810,
+        "y": 220,
+        "wires": [
+            [
+                "54a7a20174e60ab6"
+            ]
+        ]
+    },
+    {
+        "id": "27647a35c75275eb",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "MQTT Input",
+        "topic": "lokasi/BpkHaji/User2",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 790,
+        "y": 460,
+        "wires": [
+            [
+                "1ab2266504efc45a"
+            ]
+        ]
+    },
+    {
+        "id": "1ab2266504efc45a",
+        "type": "function",
+        "z": "c8b1575b4010ed02",
+        "name": "Store Coordinates",
+        "func": "flow.set('coordinates2', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c0ba88de6dd6aef3",
+        "type": "function",
+        "z": "c8b1575b4010ed02",
+        "name": "Generate Link",
+        "func": "var coords = flow.get('coordinates2');\nif (coords) {\n    msg.payload = \"window.open('http://maps.google.com/?q=\" + coords + \"', '_blank')\";\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1000,
+        "y": 520,
+        "wires": [
+            [
+                "c8a5fed40dc2db8c"
+            ]
+        ]
+    },
+    {
+        "id": "e22d1e4c8937724b",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "kapasitas/BpkHaji/User2",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 830,
+        "y": 360,
+        "wires": [
+            [
+                "fe9628c010f6bf0b"
+            ]
+        ]
+    },
+    {
+        "id": "816f55fd9ed40176",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/suhuBpkHaji/User3",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1410,
+        "y": 280,
+        "wires": [
+            [
+                "14ac1e590219eafb"
+            ]
+        ]
+    },
+    {
+        "id": "9ce03c7f8b76cfc2",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/heart_rateBpkHaji/User3",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1430,
+        "y": 120,
+        "wires": [
+            [
+                "b906e11ecaf72045",
+                "65d25784ac686d98"
+            ]
+        ]
+    },
+    {
+        "id": "de24332ed744f1c1",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "sensor/spo2BpkHaji/User3",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1410,
+        "y": 220,
+        "wires": [
+            [
+                "fd31d3c6ee5d8d3e"
+            ]
+        ]
+    },
+    {
+        "id": "e0e52a0b21ec3195",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "MQTT Input",
+        "topic": "lokasi/BpkHaji/User1",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 1370,
+        "y": 460,
+        "wires": [
+            [
+                "4e0c762d0a0a3d93"
+            ]
+        ]
+    },
+    {
+        "id": "4e0c762d0a0a3d93",
+        "type": "function",
+        "z": "c8b1575b4010ed02",
+        "name": "Store Coordinates",
+        "func": "flow.set('coordinates3', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1590,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cd4e4b53e58515b8",
+        "type": "function",
+        "z": "c8b1575b4010ed02",
+        "name": "Generate Link",
+        "func": "var coords = flow.get('coordinates3');\nif (coords) {\n    msg.payload = \"window.open('http://maps.google.com/?q=\" + coords + \"', '_blank')\";\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1580,
+        "y": 520,
+        "wires": [
+            [
+                "7bd0a8de4a8e45a3"
+            ]
+        ]
+    },
+    {
+        "id": "517f062aec46f029",
+        "type": "mqtt in",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "topic": "kapasitas/BpkHaji/User3",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "6b845c9ad6a0d20e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1410,
+        "y": 360,
+        "wires": [
+            [
+                "7ef109fceaaad69b"
+            ]
+        ]
+    },
+    {
+        "id": "7bcb21ad24348aa3",
+        "type": "ui_button",
+        "z": "c8b1575b4010ed02",
+        "name": "Open Map",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 10,
+        "width": 5,
+        "height": 1,
+        "passthru": false,
+        "label": "Cek Lokasi",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "map",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 190,
+        "y": 540,
+        "wires": [
+            [
+                "4debb6e77fccb852"
+            ]
+        ]
+    },
+    {
+        "id": "6ca677a2c714bf93",
+        "type": "ui_button",
+        "z": "c8b1575b4010ed02",
+        "name": "Open Map",
+        "group": "8c650ba4431bcf33",
+        "order": 9,
+        "width": 5,
+        "height": 1,
+        "passthru": false,
+        "label": "Cek Lokasi",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "map",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 790,
+        "y": 520,
+        "wires": [
+            [
+                "c0ba88de6dd6aef3"
+            ]
+        ]
+    },
+    {
+        "id": "326fc57cb954bb57",
+        "type": "ui_button",
+        "z": "c8b1575b4010ed02",
+        "name": "Open Map",
+        "group": "4e039c8976ef5801",
+        "order": 10,
+        "width": 5,
+        "height": 1,
+        "passthru": false,
+        "label": "Cek Lokasi",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "map",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 1390,
+        "y": 540,
+        "wires": [
+            [
+                "cd4e4b53e58515b8"
+            ]
+        ]
+    },
+    {
+        "id": "065596ec634cfb38",
+        "type": "ui_chart",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 2,
+        "width": 4,
+        "height": 4,
+        "label": "",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "200",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1ea9b3",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 550,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a5606a32cf22b665",
+        "type": "ui_chart",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "8c650ba4431bcf33",
+        "order": 2,
+        "width": 4,
+        "height": 4,
+        "label": "",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "200",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1ea9b3",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1070,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b906e11ecaf72045",
+        "type": "ui_chart",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "4e039c8976ef5801",
+        "order": 2,
+        "width": 4,
+        "height": 4,
+        "label": "",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "200",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1ea9b3",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1650,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5f796f7062da20eb",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 4,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "<font size=2>Suhu Tubuh",
+        "label": "° Celcius",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "15",
+        "seg2": "38",
+        "diff": false,
+        "className": "",
+        "x": 550,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "6ba9d9d1088e3823",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 3,
+        "width": 3,
+        "height": 4,
+        "gtype": "donut",
+        "title": "Saturasi Oksigen",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#b30000",
+            "#e6e600",
+            "#2cbf03"
+        ],
+        "seg1": "34",
+        "seg2": "80",
+        "diff": false,
+        "className": "",
+        "x": 510,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "7eaad65721752cd6",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 6,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Baterai",
+        "label": "%",
+        "format": "{{value}}",
+        "min": "0",
+        "max": "100",
+        "colors": [
+            "#ff0000",
+            "#e7e71d",
+            "#00ff4c"
+        ],
+        "seg1": "34",
+        "seg2": "66",
+        "diff": false,
+        "className": "",
+        "x": 480,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "6e1c8bb2717b81aa",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "8c650ba4431bcf33",
+        "order": 4,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Suhu Tubuh",
+        "label": "° Celcius",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "15",
+        "seg2": "38",
+        "diff": false,
+        "className": "",
+        "x": 1090,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "54a7a20174e60ab6",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "8c650ba4431bcf33",
+        "order": 3,
+        "width": 3,
+        "height": 4,
+        "gtype": "donut",
+        "title": "Saturasi Oksigen",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#b30000",
+            "#e6e600",
+            "#2cbf03"
+        ],
+        "seg1": "34",
+        "seg2": "80",
+        "diff": false,
+        "className": "",
+        "x": 1110,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "fe9628c010f6bf0b",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "8c650ba4431bcf33",
+        "order": 6,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Baterai",
+        "label": "%",
+        "format": "{{value}}",
+        "min": "0",
+        "max": "100",
+        "colors": [
+            "#ff0000",
+            "#e7e71d",
+            "#00ff4c"
+        ],
+        "seg1": "34",
+        "seg2": "66",
+        "diff": false,
+        "className": "",
+        "x": 1080,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "14ac1e590219eafb",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "4e039c8976ef5801",
+        "order": 4,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Suhu Tubuh",
+        "label": "° Celcius",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "15",
+        "seg2": "38",
+        "diff": false,
+        "className": "",
+        "x": 1670,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "fd31d3c6ee5d8d3e",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "4e039c8976ef5801",
+        "order": 3,
+        "width": 3,
+        "height": 4,
+        "gtype": "donut",
+        "title": "Saturasi Oksigen",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#b30000",
+            "#e6e600",
+            "#2cbf03"
+        ],
+        "seg1": "34",
+        "seg2": "80",
+        "diff": false,
+        "className": "",
+        "x": 1690,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "7ef109fceaaad69b",
+        "type": "ui_gauge",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "group": "4e039c8976ef5801",
+        "order": 6,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Baterai",
+        "label": "%",
+        "format": "{{value}}",
+        "min": "0",
+        "max": "100",
+        "colors": [
+            "#ff0000",
+            "#e7e71d",
+            "#00ff4c"
+        ],
+        "seg1": "34",
+        "seg2": "66",
+        "diff": false,
+        "className": "",
+        "x": 1660,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "b124ea816bb694d5",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "d82ecddbd6b7f9ef",
+        "name": "Open Link",
+        "order": 11,
+        "width": 1,
+        "height": 1,
+        "format": "<script>\n    (function(scope) {\n        scope.$watch('msg.payload', function(payload) {\n            if (payload) {\n                eval(payload);\n            }\n        });\n    })(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 590,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ce8ef10b1268dd6c",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "d82ecddbd6b7f9ef",
+        "name": "Heart Rate",
+        "order": 1,
+        "width": 7,
+        "height": 5,
+        "format": "<div class=\"card\">\n    <div class=\"header\">\n        <h3>Heart Rate Monitor 1</h3>\n    </div>\n    <div class=\"icon\">\n        <i class=\"fa fa-heartbeat\"></i>\n    </div>\n    <div class=\"value\">\n        <h1>{{msg.payload}} BPM</h1>\n    </div>\n    <div class=\"status\"\n        ng-style=\"{'background-color': (msg.payload < 60 || msg.payload > 160) ? '#ca3838' : '#00b500'}\">\n        <h4>Status: <span ng-bind=\"(msg.payload < 60 || msg.payload > 160) ? 'Warning' : 'Normal'\"></span></h4>\n    </div>\n</div>\n\n<style>\n    .card {\n        width: 100%;\n        max-width: 300px;\n        background-color: #f9f9f9;\n        border-radius: 10px;\n        padding: 20px;\n        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);\n        text-align: center;\n        font-family: Arial, sans-serif;\n    }\n\n    .header h3 {\n        margin: 0;\n        color: #333;\n    }\n\n    .icon {\n        margin: 20px 0;\n        color: #ca3838;\n    }\n\n    .icon i {\n        font-size: 50px;\n    }\n\n    .value h1 {\n        margin: 0;\n        font-size: 38px;\n        color: #333;\n    }\n\n    .status {\n        margin-top: 20px;\n        padding: 5px;\n        border-radius: 5px;\n        color: white;\n    }\n\n    .status h4 {\n        margin: 0;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "custom-group",
+        "x": 550,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c8a5fed40dc2db8c",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "8c650ba4431bcf33",
+        "name": "Open Link",
+        "order": 8,
+        "width": 1,
+        "height": 1,
+        "format": "<script>\n    (function(scope) {\n        scope.$watch('msg.payload', function(payload) {\n            if (payload) {\n                eval(payload);\n            }\n        });\n    })(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1190,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b11f390da25583af",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "8c650ba4431bcf33",
+        "name": "Heart Rate",
+        "order": 1,
+        "width": 7,
+        "height": 5,
+        "format": "<div class=\"card\">\n    <div class=\"header\">\n        <h3>Heart Rate Monitor 2</h3>\n    </div>\n    <div class=\"icon\">\n        <i class=\"fa fa-heartbeat\"></i>\n    </div>\n    <div class=\"value\">\n        <h1>{{msg.payload}} BPM</h1>\n    </div>\n    <div class=\"status\"\n        ng-style=\"{'background-color': (msg.payload < 60 || msg.payload > 160) ? '#ca3838' : '#00b500'}\">\n        <h4>Status: <span ng-bind=\"(msg.payload < 60 || msg.payload > 160) ? 'Warning' : 'Normal'\"></span></h4>\n    </div>\n</div>\n\n<style>\n    .card {\n        width: 100%;\n        max-width: 300px;\n        background-color: #f9f9f9;\n        border-radius: 10px;\n        padding: 20px;\n        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);\n        text-align: center;\n        font-family: Arial, sans-serif;\n    }\n\n    .header h3 {\n        margin: 0;\n        color: #333;\n    }\n\n    .icon {\n        margin: 20px 0;\n        color: #ca3838;\n    }\n\n    .icon i {\n        font-size: 50px;\n    }\n\n    .value h1 {\n        margin: 0;\n        font-size: 38px;\n        color: #333;\n    }\n\n    .status {\n        margin-top: 20px;\n        padding: 5px;\n        border-radius: 5px;\n        color: white;\n    }\n\n    .status h4 {\n        margin: 0;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "custom-group",
+        "x": 1090,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7bd0a8de4a8e45a3",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "4e039c8976ef5801",
+        "name": "Open Link",
+        "order": 11,
+        "width": 1,
+        "height": 1,
+        "format": "<script>\n    (function(scope) {\n        scope.$watch('msg.payload', function(payload) {\n            if (payload) {\n                eval(payload);\n            }\n        });\n    })(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1770,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "65d25784ac686d98",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "4e039c8976ef5801",
+        "name": "Heart Rate",
+        "order": 1,
+        "width": 7,
+        "height": 5,
+        "format": "<div class=\"card\">\n    <div class=\"header\">\n        <h3>Heart Rate Monitor 3</h3>\n    </div>\n    <div class=\"icon\">\n        <i class=\"fa fa-heartbeat\"></i>\n    </div>\n    <div class=\"value\">\n        <h1>{{msg.payload}} BPM</h1>\n    </div>\n    <div class=\"status\"\n        ng-style=\"{'background-color': (msg.payload < 60 || msg.payload > 160) ? '#ca3838' : '#00b500'}\">\n        <h4>Status: <span ng-bind=\"(msg.payload < 60 || msg.payload > 160) ? 'Warning' : 'Normal'\"></span></h4>\n    </div>\n</div>\n\n<style>\n    .card {\n        width: 100%;\n        max-width: 300px;\n        background-color: #f9f9f9;\n        border-radius: 10px;\n        padding: 20px;\n        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);\n        text-align: center;\n        font-family: Arial, sans-serif;\n    }\n\n    .header h3 {\n        margin: 0;\n        color: #333;\n    }\n\n    .icon {\n        margin: 20px 0;\n        color: #ca3838;\n    }\n\n    .icon i {\n        font-size: 50px;\n    }\n\n    .value h1 {\n        margin: 0;\n        font-size: 38px;\n        color: #333;\n    }\n\n    .status {\n        margin-top: 20px;\n        padding: 5px;\n        border-radius: 5px;\n        color: white;\n    }\n\n    .status h4 {\n        margin: 0;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "custom-group",
+        "x": 1670,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f16b6a3d45c5d609",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "8c650ba4431bcf33",
+        "name": "history",
+        "order": 10,
+        "width": 2,
+        "height": 1,
+        "format": "<div>\n    <button id=\"openSpreadsheetBtn\" style=\"min-width: fit-content; padding: 8px 16px; font-size:16px; background-color:#2196F3; color:white; border:none; cursor:pointer; border-radius:5px;\">\n        History\n    </button>\n</div>\n\n<script>\n    document.getElementById('openSpreadsheetBtn').addEventListener('click', function() {\n        var spreadsheetId = \"1bYTspKua_PAopUNrm_vt_bRA2mjvaOQUi2OFAcs-Ga8\"; // ID Google Spreadsheet\n        var url = \"https://docs.google.com/spreadsheets/d/\" + spreadsheetId + \"/edit\";\n        window.open(url, '_blank');\n    });\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 130,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "aef760ca.6f201",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "",
+        "name": "background",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n    body {\n        background-image: url(\"/pic7.JPG\");\n        background-repeat: no-repeat;\n        background-position: right top;\n        background-size: 100%;\n        background-attachment: fixed;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "global",
+        "className": "",
+        "x": 310,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "67807b261f0da3c6",
+        "type": "function",
+        "z": "c8b1575b4010ed02",
+        "name": "function 1",
+        "func": "flow.set(\"lastDataTime\", Date.now());\nflow.set(\"lastPayload\", msg.payload); // simpan nilai terakhir\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 20,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6ce30d41e37aa0eb",
+        "type": "function",
+        "z": "c8b1575b4010ed02",
+        "name": "function 2",
+        "func": "let now = Date.now();\nlet lastTime = flow.get(\"lastDataTime\") || 0;\nlet lastPayload = flow.get(\"lastPayload\") || 0;\n\nif (now - lastTime > 5000) {\n    return { payload: 0 };\n} else {\n    return null; // jangan ganggu nilai saat data masih dianggap aktif\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b25afdf88d87f936",
+        "type": "inject",
+        "z": "c8b1575b4010ed02",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 870,
+        "y": 80,
+        "wires": [
+            [
+                "6ce30d41e37aa0eb"
+            ]
+        ]
+    },
+    {
+        "id": "72d462bd1ae4f7a5",
+        "type": "remote-access",
+        "z": "c8b1575b4010ed02",
+        "confignode": "ea9eabeb6b25cd5e",
+        "name": "",
+        "verbose": 0,
+        "x": 100,
+        "y": 80,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "dd5f965e.fb70b8",
+        "type": "ui_template",
+        "z": "c8b1575b4010ed02",
+        "group": "81b1bdc3.9a60b8",
+        "name": "setting background dan theme",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n   * {\n      /* Hapus background: none !important yang menyebabkan masalah */\n   }\n\n   root,\n   a,\n   p,\n   div {\n      -webkit-user-select: none !important;\n   }\n\n   /* Penanganan khusus untuk button */\n   button {\n      -webkit-user-select: none !important;\n      background-color: rgba(255, 255, 255, 0.15) !important;\n      /* Transparan dengan sedikit putih */\n      color: white !important;\n      padding: 8px 16px !important;\n      border-radius: 5px !important;\n      border: 1px solid rgba(255, 255, 255, 0.3) !important;\n      /* Border tipis transparan */\n      cursor: pointer !important;\n      transition: all 0.3s ease !important;\n      /* Animasi transisi untuk hover */\n      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;\n      /* Bayangan subtle */\n   }\n\n   /* Efek hover untuk tombol */\n   button:hover {\n      background-color: rgba(255, 255, 255, 0.25) !important;\n      /* Lebih opak saat hover */\n      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;\n      /* Bayangan lebih besar saat hover */\n      transform: translateY(-2px) !important;\n      /* Efek sedikit terangkat */\n      border: 1px solid rgba(255, 255, 255, 0.5) !important;\n      /* Border lebih terlihat */\n   }\n\n   /* Efek active saat tombol diklik */\n   button:active {\n      background-color: rgba(255, 255, 255, 0.3) !important;\n      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;\n      transform: translateY(1px) !important;\n      /* Efek ditekan */\n   }\n\n   body {\n      /*background-image: url(\"http://192.168.178.1:1880/ui/2023.jpg\");*/\n      /*background: linear-gradient(120deg, rgba(40, 42, 49, 1.0) 40%, rgba(47, 49, 56, 1.0) 80%) !important;*/\n      /*background-size: cover !important;*/\n      background: transparent !important;\n\n      background: -webkit-linear-gradient(55deg,\n            #FF3D3D 0%,\n            #FF8A00 100%) !important;\n\n      -webkit-touch-callout: none !important;\n      color: #ffffff !important;\n      padding-top: 5px !important;\n   }\n\n   body.nr-dashboard-theme md-toolbar,\n   body.nr-dashboard-theme md-content md-card {}\n\n   ui-card-panel {\n      background-color: rgba(250, 250, 250, 0.3) !important;\n      border: none !important;\n      border-radius: 10px !important;\n      /*box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.2), 0 4px 8px 0 rgba(0, 0, 0, 0.19) !important; */\n   }\n\n   ui-card-panel>div.nr-dashboard-cardpanel>div>md-card {\n      background: none !important;\n   }\n\n   /* Override untuk tombol dalam card panel */\n   ui-card-panel>div.nr-dashboard-cardpanel button {\n      /* Tetap gunakan style tombol yang didefinisikan di atas */\n   }\n\n   md-toolbar {\n      background: none !important;\n   }\n\n   md-sidenav {\n      background: linear-gradient(120deg, rgba(40, 42, 49, 0.90) 20%, rgba(47, 49, 56, 0.90) 80%) !important;\n   }\n\n   md-card.nr-dashboard-button * {\n      box-shadow: none !important;\n   }\n\n   /* Ubah aturan ini agar tidak mempengaruhi tombol */\n   md-card.nr-dashboard-template *:not(button) {\n      background: none !important;\n   }\n\n   /* Style khusus untuk tombol dalam template */\n   md-card.nr-dashboard-template button {\n      /* Tombol akan mengikuti style button global yang didefinisikan di atas */\n   }\n\n   /* Mendukung button dengan class md-button yang umum digunakan di Angular Material */\n   .md-button,\n   [md-raised-button],\n   .md-raised {\n      background-color: rgba(255, 255, 255, 0.15) !important;\n      color: white !important;\n      transition: all 0.3s ease !important;\n      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;\n      border: 1px solid rgba(255, 255, 255, 0.3) !important;\n   }\n\n   .md-button:hover,\n   [md-raised-button]:hover,\n   .md-raised:hover {\n      background-color: rgba(255, 255, 255, 0.25) !important;\n      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;\n      transform: translateY(-2px) !important;\n      border: 1px solid rgba(255, 255, 255, 0.5) !important;\n   }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": false,
+        "templateScope": "global",
+        "className": "",
+        "x": 330,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b0d86a2a7641c60c",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 5,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "84b356e11336341c",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 7,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "7c8558b6a1591e96",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 8,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "ffb292c41ed6288a",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "d82ecddbd6b7f9ef",
+        "order": 9,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "e4cd8d108e75439c",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "8c650ba4431bcf33",
+        "order": 7,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "da0eac60c5655545",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "4e039c8976ef5801",
+        "order": 5,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "d9277a3fcdd96643",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "4e039c8976ef5801",
+        "order": 7,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "2ddb8b7758a6dd3e",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "4e039c8976ef5801",
+        "order": 8,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "cd29732577092afe",
+        "type": "ui_spacer",
+        "z": "c8b1575b4010ed02",
+        "name": "spacer",
+        "group": "4e039c8976ef5801",
+        "order": 9,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "6b845c9ad6a0d20e",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "broker.emqx.io",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "d82ecddbd6b7f9ef",
+        "type": "ui_group",
+        "name": "Prajurit 1",
+        "tab": "056137aee01172d9",
+        "order": 1,
+        "disp": true,
+        "width": "7",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "8c650ba4431bcf33",
+        "type": "ui_group",
+        "name": "Prajurit 2",
+        "tab": "056137aee01172d9",
+        "order": 2,
+        "disp": true,
+        "width": "7",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "4e039c8976ef5801",
+        "type": "ui_group",
+        "name": "Prajurit 3",
+        "tab": "056137aee01172d9",
+        "order": 3,
+        "disp": true,
+        "width": 7,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "ea9eabeb6b25cd5e",
+        "type": "remote-config",
+        "name": "Node-RED UI",
+        "host": "localhost",
+        "protocol": "http",
+        "port": "1880",
+        "baseurl": "/ui",
+        "instancehash": "97ctgf5er4e1mck5x3ym8a17ea9qwomscicuo2fu0ycojhoj3cxlr51hoeroq2l6",
+        "server": "nodered05.remote-red.com",
+        "region": "sg"
+    },
+    {
+        "id": "81b1bdc3.9a60b8",
+        "type": "ui_group",
+        "name": "Hacks",
+        "tab": "2f5baa7e.0221fe",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "056137aee01172d9",
+        "type": "ui_tab",
+        "name": "Vital Signs Monitor",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "2f5baa7e.0221fe",
+        "type": "ui_tab",
+        "name": "Settings",
+        "icon": "timeline",
+        "order": 1,
+        "disabled": true,
+        "hidden": false
+    }
+]
