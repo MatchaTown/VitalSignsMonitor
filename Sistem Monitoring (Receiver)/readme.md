@@ -1,0 +1,1 @@
+kebutuhan receiver
