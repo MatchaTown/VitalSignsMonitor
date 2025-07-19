@@ -1,0 +1,619 @@
+#include <SPI.h>
+#include <LoRa.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <PubSubClient.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+#define ss 5
+#define rst 14
+#define dio0 26
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+const char* ssid = "Realme C17";
+const char* password = "12345678";
+const char* mqtt_server = "broker.emqx.io";
+
+String Web_App_URL = "https://script.google.com/macros/s/AKfycbyz-CB-c8eNe9o4MIMtmr7nZQ6p4uUgO6OoBWSSBehTjS5Xef1ENQLqOiOUAUuQQ7Q/exec";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+String receivedData = "";
+float heartRate = 0;
+float spo2 = 0;
+float suhuDS18B20 = 0;
+float latitude = 0;
+float longitude = 0;
+float batteryCapacity = 0;
+
+String userID = "";
+String suhuStatus = "";
+String oksigenStatus = "";
+String heartRateStatus = "";
+
+bool mqttSent = false;
+bool googleSheetsSent = false;
+bool newDataAvailable = false;
+
+unsigned long lastMQTTCheck = 0;
+unsigned long lastMQTTUpload = 0;
+unsigned long lastGoogleUpload = 0;
+unsigned long lastLCDUpdate = 0;
+unsigned long lastStatsDisplay = 0;
+unsigned long lastWiFiCheck = 0;
+
+const unsigned long MQTT_CHECK_INTERVAL = 5000;
+const unsigned long MQTT_UPLOAD_INTERVAL = 2000;
+const unsigned long GOOGLE_UPLOAD_INTERVAL = 5000;
+const unsigned long LCD_UPDATE_INTERVAL = 3000;
+const unsigned long STATS_DISPLAY_INTERVAL = 10000;
+const unsigned long WIFI_CHECK_INTERVAL = 30000;
+
+enum LCDState {
+  LCD_SENSOR_DATA,
+  LCD_TEMPERATURE_BATTERY,
+  LCD_UPLOAD_STATUS
+};
+LCDState currentLCDState = LCD_SENSOR_DATA;
+
+int rssi = 0;
+float snr = 0;
+unsigned long totalPacketsReceived = 0;
+unsigned long totalPacketsExpected = 0;
+unsigned long totalBitsReceived = 0;
+unsigned long totalBitErrors = 0;
+float per = 0.0;
+float ber = 0.0;
+float toa = 0.0;
+float totalBerSum = 0.0;
+unsigned long berSampleCount = 0;
+
+const long bandwidth = 250000;
+const int spreadingFactor = 9;
+const int codingRate = 8;
+const int preambleLength = 8;
+const bool lowDataRateOptimize = false;
+const bool crcOn = true;
+
+struct DataPacket {
+  String userID;
+  float heartRate;
+  float spo2;
+  float suhuDS18B20;
+  float latitude;
+  float longitude;
+  float batteryCapacity;
+  String suhuStatus;
+  String oksigenStatus;
+  String heartRateStatus;
+  unsigned long timestamp;
+};
+
+DataPacket latestData;
+bool mqttUploadPending = false;
+bool googleUploadPending = false;
+
+float calculateToA(int payloadLength);
+void displayLoRaStatistics();
+String urlEncode(String str);
+void setup_wifi();
+void reconnect();
+void testGoogleConnection();
+void sendDataToGoogle();
+void printSensorDataToSerial();
+void parseData(String data);
+void updateLCD();
+void sendDataToMQTT();
+void checkWiFiConnection();
+void processNewData();
+
+float calculateToA(int payloadLength) {
+    float Ts = (float)(1 << spreadingFactor) / bandwidth;
+    float Tpreamble = (preambleLength + 4.25) * Ts;
+    
+    float payloadSymbNb;
+    int DE = (lowDataRateOptimize) ? 1 : 0;
+    int H = 0;
+    int CRC = (crcOn) ? 1 : 0;
+    
+    float temp = (8 * payloadLength - 4 * spreadingFactor + 28 + 16 * CRC - 20 * H) / (4 * (spreadingFactor - 2 * DE));
+    if (temp > 0) {
+        payloadSymbNb = 8 + ceil(temp) * codingRate;
+    } else {
+        payloadSymbNb = 8;
+    }
+    
+    float Tpayload = payloadSymbNb * Ts;
+    float totalToA = Tpreamble + Tpayload;
+    
+    return totalToA * 1000;
+}
+
+void displayLoRaStatistics() {
+    rssi = LoRa.packetRssi();
+    snr = LoRa.packetSnr();
+    
+    int lastPacketSize = receivedData.length();
+    if (lastPacketSize > 0) {
+        toa = calculateToA(lastPacketSize);
+    }
+    
+    totalPacketsExpected = millis() / 10000;
+    if (totalPacketsExpected > 0) {
+        per = ((float)(totalPacketsExpected - totalPacketsReceived) / totalPacketsExpected) * 100.0;
+        if (per < 0) per = 0;
+    }
+    
+    if (snr > 0) {
+        float instantBer = pow(10, -snr/10) / 2;
+        if (instantBer > 1) instantBer = 1;
+        if (instantBer < 0) instantBer = 0;
+        
+        totalBerSum += instantBer;
+        berSampleCount++;
+        ber = totalBerSum / berSampleCount;
+    }
+    
+    Serial.println("=== LoRa Communication Statistics ===");
+    Serial.print("RSSI: "); Serial.print(rssi); Serial.println(" dBm");
+    Serial.print("SNR: "); Serial.print(snr); Serial.println(" dB");
+    Serial.print("ToA: "); Serial.print(toa, 2); Serial.println(" ms");
+    Serial.print("PER: "); Serial.print(per, 2); Serial.println(" %");
+    Serial.print("BER: "); Serial.print(ber, 6); Serial.print(" (Samples: "); Serial.print(berSampleCount); Serial.println(")");
+    Serial.print("Packets Received: "); Serial.println(totalPacketsReceived);
+    Serial.println("=====================================");
+}
+
+String urlEncode(String str) {
+    String encodedString = "";
+    char c;
+    char code0;
+    char code1;
+    for (int i = 0; i < str.length(); i++) {
+        c = str.charAt(i);
+        if (c == ' ') {
+            encodedString += '+';
+        } else if (isAlphaNumeric(c)) {
+            encodedString += c;
+        } else {
+            code1 = (c & 0xf) + '0';
+            if ((c & 0xf) > 9) {
+                code1 = (c & 0xf) - 10 + 'A';
+            }
+            c = (c >> 4) & 0xf;
+            code0 = c + '0';
+            if (c > 9) {
+                code0 = c - 10 + 'A';
+            }
+            encodedString += '%';
+            encodedString += code0;
+            encodedString += code1;
+        }
+    }
+    return encodedString;
+}
+
+void setup_wifi() {
+    WiFi.begin(ssid, password);
+    int attempts = 0;
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Connecting WiFi...");
+
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+        delay(250);
+        Serial.print(".");
+        attempts++;
+    }
+
+    lcd.clear();
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\nWiFi connected");
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
+        lcd.setCursor(0, 0);
+        lcd.print("WiFi: Connected");
+        lcd.setCursor(0, 1);
+        lcd.print(WiFi.localIP().toString());
+    } else {
+        Serial.println("\nWiFi failed to connect.");
+        lcd.setCursor(0, 0);
+        lcd.print("WiFi Failed");
+    }
+}
+
+void checkWiFiConnection() {
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi disconnected, attempting reconnection...");
+        WiFi.begin(ssid, password);
+        delay(1000);
+    }
+}
+
+void reconnect() {
+    if (client.connected()) return;
+    
+    Serial.print("Attempting MQTT connection...");
+    String clientId = "ESP32LoRaGateway_" + String((uint32_t)(ESP.getEfuseMac() >> 32), HEX);
+    
+    if (client.connect(clientId.c_str())) {
+        Serial.println("connected");
+    } else {
+        Serial.print("failed, rc=");
+        Serial.print(client.state());
+        Serial.println(" will retry later");
+    }
+}
+
+void testGoogleConnection() {
+    if (WiFi.status() == WL_CONNECTED) {
+        HTTPClient http;
+        String testURL = Web_App_URL + "?userID=TEST&suhu=36.5&suhuStatus=Normal&oksigen=98&oksigenStatus=Normal&heartRate=80&heartRateStatus=Normal&latitude=0&longitude=0&battery=100";
+        
+        http.begin(testURL.c_str());
+        http.setTimeout(5000);
+        http.addHeader("User-Agent", "ESP32/1.0");
+        
+        int httpResponseCode = http.GET();
+        
+        if (httpResponseCode > 0) {
+            Serial.println("Google Sheets connection test successful");
+        } else {
+            Serial.println("Google Sheets connection test failed");
+        }
+        http.end();
+    }
+}
+
+void sendDataToGoogle() {
+    if (WiFi.status() != WL_CONNECTED || !googleUploadPending) {
+        return;
+    }
+
+    HTTPClient http;
+    http.begin(Web_App_URL);
+    http.setTimeout(8000);
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    String postData = "userID=" + urlEncode(latestData.userID) + 
+                     "&suhu=" + String(latestData.suhuDS18B20) + 
+                     "&suhuStatus=" + urlEncode(latestData.suhuStatus) + 
+                     "&oksigen=" + String(latestData.spo2) + 
+                     "&oksigenStatus=" + urlEncode(latestData.oksigenStatus) + 
+                     "&heartRate=" + String(latestData.heartRate) + 
+                     "&heartRateStatus=" + urlEncode(latestData.heartRateStatus) + 
+                     "&latitude=" + String(latestData.latitude, 6) + 
+                     "&longitude=" + String(latestData.longitude, 6) + 
+                     "&battery=" + String(latestData.batteryCapacity);
+    
+    int httpResponseCode = http.POST(postData);
+    
+    if (httpResponseCode > 0) {
+        Serial.println("Google Sheets upload successful");
+        googleSheetsSent = true;
+        googleUploadPending = false;
+    } else {
+        Serial.print("Google Sheets upload failed: ");
+        Serial.println(httpResponseCode);
+    }
+    
+    http.end();
+}
+
+void sendDataToMQTT() {
+    if (!client.connected() || !mqttUploadPending) {
+        return;
+    }
+
+    String effectiveUserID = (latestData.userID != "") ? latestData.userID : "Unknown";
+    
+    String heartRateTopic = "sensor/heart_rateBpkHaji/" + effectiveUserID;
+    String spo2Topic = "sensor/spo2BpkHaji/" + effectiveUserID;
+    String suhuTopic = "sensor/suhuBpkHaji/" + effectiveUserID;
+    String gpsTopic = "lokasi/BpkHaji/" + effectiveUserID;
+    String batteryTopic = "kapasitas/BpkHaji/" + effectiveUserID;
+
+    bool hrSuccess = client.publish(heartRateTopic.c_str(), String(latestData.heartRate).c_str());
+    bool spo2Success = client.publish(spo2Topic.c_str(), String(latestData.spo2).c_str());
+    bool suhuSuccess = client.publish(suhuTopic.c_str(), String(latestData.suhuDS18B20).c_str());
+    bool batterySuccess = client.publish(batteryTopic.c_str(), String(latestData.batteryCapacity).c_str());
+    
+    bool gpsSuccess = false;
+    if (latestData.latitude != 0 && latestData.longitude != 0) {
+        String gpsLocation = String(latestData.latitude, 6) + "," + String(latestData.longitude, 6);
+        gpsSuccess = client.publish(gpsTopic.c_str(), gpsLocation.c_str());
+    }
+    
+    mqttSent = hrSuccess || spo2Success || suhuSuccess || batterySuccess || gpsSuccess;
+    
+    if (mqttSent) {
+        Serial.println("MQTT upload successful");
+        mqttUploadPending = false;
+    } else {
+        Serial.println("MQTT upload failed");
+    }
+}
+
+void processNewData() {
+    latestData.userID = userID;
+    latestData.heartRate = heartRate;
+    latestData.spo2 = spo2;
+    latestData.suhuDS18B20 = suhuDS18B20;
+    latestData.latitude = latitude;
+    latestData.longitude = longitude;
+    latestData.batteryCapacity = batteryCapacity;
+    latestData.suhuStatus = suhuStatus;
+    latestData.oksigenStatus = oksigenStatus;
+    latestData.heartRateStatus = heartRateStatus;
+    latestData.timestamp = millis();
+    
+    mqttUploadPending = true;
+    googleUploadPending = true;
+    
+    mqttSent = false;
+    googleSheetsSent = false;
+    
+    printSensorDataToSerial();
+    
+    Serial.println("New data processed and queued for upload");
+}
+
+void updateLCD() {
+    lcd.clear();
+    
+    switch (currentLCDState) {
+        case LCD_SENSOR_DATA:
+            lcd.setCursor(0, 0);
+            lcd.print("ID: " + userID);
+            lcd.setCursor(0, 1);
+            lcd.print("BPM:" + String(heartRate) + " SpO2:" + String(spo2));
+            currentLCDState = LCD_TEMPERATURE_BATTERY;
+            break;
+            
+        case LCD_TEMPERATURE_BATTERY:
+            lcd.setCursor(0, 0);
+            lcd.print("Suhu:" + String(suhuDS18B20));
+            lcd.setCursor(0, 1);
+            lcd.print("Batt: " + String(batteryCapacity) + "%");
+            currentLCDState = LCD_UPLOAD_STATUS;
+            break;
+            
+        case LCD_UPLOAD_STATUS:
+            lcd.setCursor(0, 0);
+            lcd.print("Upload Status:");
+            lcd.setCursor(0, 1);
+            String status = "";
+            if (mqttSent) status += "M";
+            if (googleSheetsSent) status += "G";
+            if (status == "") status = "Pending";
+            lcd.print(status);
+            currentLCDState = LCD_SENSOR_DATA;
+            break;
+    }
+}
+
+void setup() {
+    Serial.begin(115200);
+    while (!Serial);
+
+    lcd.init();
+    lcd.backlight();
+    
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Selamat Datang");
+    lcd.setCursor(0, 1);
+    lcd.print("Tentara Shin1");
+    delay(2000);
+    
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Init LoRa...");
+
+    LoRa.setPins(ss, rst, dio0);
+    
+    if (!LoRa.begin(923.0E6)) {
+        Serial.println("LoRa connection failed!");
+        lcd.setCursor(0, 1);
+        lcd.print("LoRa Failed");
+        while (1);
+    }
+
+    LoRa.setSyncWord(0xF3);
+    LoRa.setSpreadingFactor(9);
+    LoRa.setSignalBandwidth(250E3);
+    LoRa.setTxPower(15);
+    LoRa.setCodingRate4(8);
+    Serial.println("LoRa Initialized Successfully");
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("LoRa: Connected");
+
+    setup_wifi();
+
+    client.setServer(mqtt_server, 1883);
+    
+    testGoogleConnection();
+    
+    totalPacketsReceived = 0;
+    totalPacketsExpected = 0;
+    totalBerSum = 0.0;
+    berSampleCount = 0;
+    
+    Serial.println("=== LoRa Gateway Ready (Non-Blocking Mode) ===");
+    Serial.println("System optimized for fast data capture");
+    Serial.println("===============================");
+}
+
+void loop() {
+    unsigned long currentTime = millis();
+    
+    int packetSize = LoRa.parsePacket();
+    if (packetSize) {
+        receivedData = "";
+        while (LoRa.available()) {
+            receivedData += (char)LoRa.read();
+        }
+        
+        totalPacketsReceived++;
+        parseData(receivedData);
+        processNewData();
+        newDataAvailable = true;
+        
+        Serial.println("*** NEW DATA RECEIVED - Processing immediately ***");
+    }
+    
+    if (currentTime - lastMQTTCheck >= MQTT_CHECK_INTERVAL) {
+        lastMQTTCheck = currentTime;
+        if (!client.connected()) {
+            reconnect();
+        }
+    }
+    client.loop();
+    
+    if (mqttUploadPending && (currentTime - lastMQTTUpload >= MQTT_UPLOAD_INTERVAL)) {
+        lastMQTTUpload = currentTime;
+        sendDataToMQTT();
+    }
+    
+    if (googleUploadPending && (currentTime - lastGoogleUpload >= GOOGLE_UPLOAD_INTERVAL)) {
+        lastGoogleUpload = currentTime;
+        sendDataToGoogle();
+    }
+    
+    if (newDataAvailable && (currentTime - lastLCDUpdate >= LCD_UPDATE_INTERVAL)) {
+        lastLCDUpdate = currentTime;
+        updateLCD();
+    }
+    
+    if (currentTime - lastStatsDisplay >= STATS_DISPLAY_INTERVAL) {
+        lastStatsDisplay = currentTime;
+        if (totalPacketsReceived > 0) {
+            displayLoRaStatistics();
+        }
+    }
+    
+    if (currentTime - lastWiFiCheck >= WIFI_CHECK_INTERVAL) {
+        lastWiFiCheck = currentTime;
+        checkWiFiConnection();
+    }
+    
+    delay(10);
+}
+
+void printSensorDataToSerial() {
+    Serial.print("User id: ");
+    Serial.print(userID);
+    Serial.print(", HR: ");
+    Serial.print(heartRate);
+    Serial.print(", sp02: ");
+    Serial.print(spo2);
+    Serial.print(", suhu: ");
+    Serial.print(suhuDS18B20);
+    Serial.print(", lokasi: ");
+    Serial.print(String(latitude, 6) + "," + String(longitude, 6));
+    Serial.print(", kapasitas: ");
+    Serial.println(batteryCapacity);
+    
+    Serial.print("Data upload status: ");
+    if (googleSheetsSent) Serial.print("Google Sheets: OK ");
+    else Serial.print("Google Sheets: Pending ");
+    if (mqttSent) Serial.print("MQTT: OK");
+    else Serial.print("MQTT: Pending");
+    Serial.println();
+    Serial.println();
+}
+
+void parseData(String data) {
+    int idIndex = data.indexOf("ID: ");
+    int hrIndex = data.indexOf("BPM: ");
+    int spo2Index = data.indexOf(", SpO2: ");
+    int suhuIndex = data.indexOf(", Suhu: ");
+    int latIndex = data.indexOf(", Lat: ");
+    int longIndex = data.indexOf(", Lng: ");
+    int batteryIndex = data.indexOf(", Battery: ");
+
+    String tempUserID = "Unknown";
+    float tempHeartRate = 0;
+    float tempSpo2 = 0;
+    float tempSuhu = 0;
+    float tempLatitude = 0;
+    float tempLongitude = 0;
+    float tempBattery = 0;
+
+    if (idIndex != -1 && hrIndex != -1) {
+        tempUserID = data.substring(idIndex + 4, hrIndex);
+        tempUserID.trim();
+    }
+
+    if (hrIndex != -1 && spo2Index != -1) {
+        String hrStr = data.substring(hrIndex + 5, spo2Index);
+        hrStr.trim();
+        tempHeartRate = hrStr.toFloat();
+        if (tempHeartRate < 30 || tempHeartRate > 220) {
+            Serial.println("Warning: Heart rate out of normal range");
+        }
+    }
+
+    if (spo2Index != -1 && suhuIndex != -1) {
+        String spo2Str = data.substring(spo2Index + 8, suhuIndex);
+        spo2Str.trim();
+        tempSpo2 = spo2Str.toFloat();
+        if (tempSpo2 < 0 || tempSpo2 > 100) {
+            tempSpo2 = constrain(tempSpo2, 0, 100);
+        }
+    }
+
+    if (suhuIndex != -1 && latIndex != -1) {
+        String suhuStr = data.substring(suhuIndex + 8, latIndex);
+        suhuStr.trim();
+        tempSuhu = suhuStr.toFloat();
+        if (tempSuhu < 20 || tempSuhu > 45) {
+            Serial.println("Warning: Temperature out of normal range");
+        }
+    }
+
+    if (latIndex != -1 && longIndex != -1) {
+        String latStr = data.substring(latIndex + 6, longIndex);
+        latStr.trim();
+        tempLatitude = latStr.toFloat();
+        if (tempLatitude < -90 || tempLatitude > 90) {
+            tempLatitude = constrain(tempLatitude, -90, 90);
+        }
+    }
+
+    if (longIndex != -1 && batteryIndex != -1) {
+        String longStr = data.substring(longIndex + 6, batteryIndex);
+        longStr.trim();
+        tempLongitude = longStr.toFloat();
+        if (tempLongitude < -180 || tempLongitude > 180) {
+            tempLongitude = constrain(tempLongitude, -180, 180);
+        }
+    }
+
+    if (batteryIndex != -1) {
+        String batteryStr = data.substring(batteryIndex + 10);
+        batteryStr.trim();
+        tempBattery = batteryStr.toFloat();
+        if (tempBattery < 0 || tempBattery > 100) {
+            tempBattery = constrain(tempBattery, 0, 100);
+        }
+    }
+
+    userID = tempUserID;
+    heartRate = tempHeartRate;
+    spo2 = tempSpo2;
+    suhuDS18B20 = tempSuhu;
+    latitude = tempLatitude;
+    longitude = tempLongitude;
+    batteryCapacity = tempBattery;
+
+    suhuStatus = (suhuDS18B20 > 38 || suhuDS18B20 < 36) ? "Tidak Normal" : "Normal";
+    oksigenStatus = spo2 < 90 ? "Tidak Normal" : "Normal";
+    heartRateStatus = (heartRate < 60 || heartRate > 150) ? "Tidak Normal" : "Normal";
+}
